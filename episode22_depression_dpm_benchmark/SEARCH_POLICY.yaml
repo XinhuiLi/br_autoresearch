@@ -1,0 +1,249 @@
+schema_version: ep22.search_policy.v0
+policy_id: ep22_depression_dpm_benchmark_draft
+episode_id: ep22
+recorded_on: "2026-10-06"
+evidence_mode: private_data_methods_benchmark
+
+authority:
+  local_episode_contract_only: true
+  empirical_access_authorized: false
+  private_data_mount_authorized: false
+  model_fitting_authorized: false
+  canonical_brain_researcher_action_authorized: false
+  valid_protocol_lock_still_requires_later_execution_instruction: true
+
+scientific_intent:
+  primary_question: >
+    Which disease progression modelling assumptions are supported by private
+    depression neuroimaging and clinical data, and do inferred subtype/stage
+    or latent-continuum coordinates generalize across Chinese MDD, UCLA-UNM
+    ECT, LA5C, and MDD DIRECT cohorts strongly enough to predict symptom burden
+    or treatment trajectory?
+  contribution_type: methods_benchmark_and_boundary_test
+  not_claiming:
+    - first_application_of_sustain_to_mdd
+    - first_application_of_vae_to_psychiatric_fnc_continuum
+    - causal_disease_progression
+    - neurodegeneration
+    - clinical_readiness
+    - ect_treatment_mechanism
+
+data_access_stage:
+  current_stage: design_only
+  allowed_before_protocol_lock:
+    - public_method_documentation
+    - published_aggregate_context
+    - redacted_structural_manifests_without_private_values
+    - counts_shapes_dtypes_missingness_masks_without_values
+    - variable_names_and_role_labels
+    - data_use_terms_and_compute_constraints
+  forbidden_before_protocol_lock:
+    - private_imaging_or_clinical_values
+    - symptom_change_values_or_summaries
+    - response_remission_relapse_outcomes
+    - model_scores_subtypes_stages_event_orders_or_rankings
+    - outcome_selected_figures_or_reports
+    - sibling_episode_outputs_as_selection_inputs
+
+datasets:
+  chinese_mdd:
+    role: primary_mdd_discovery_or_cross_dataset_training_source
+    status: unprovisioned_unqualified
+    required_manifest: inputs/chinese_mdd_structural_manifest.json
+    empirical_values_visible_now: false
+  ucla_unm_ect:
+    role: treatment_response_and_site_transport_benchmark
+    status: unprovisioned_unqualified
+    required_manifest: inputs/ucla_unm_ect_structural_manifest.json
+    empirical_values_visible_now: false
+  la5c:
+    role: cross_dataset_transport_and_generalization_benchmark
+    status: unprovisioned_unqualified
+    required_manifest: inputs/la5c_structural_manifest.json
+    empirical_values_visible_now: false
+  mdd_direct:
+    role: cross_dataset_transport_and_independent_endpoint_benchmark
+    status: unprovisioned_unqualified
+    required_manifest: inputs/mdd_direct_structural_manifest.json
+    empirical_values_visible_now: false
+
+benchmarked_methods:
+  ebm:
+    method_number: 1
+    role: single_sequence_cross_sectional_baseline
+    eligible_when:
+      - baseline_biomarkers_available
+      - abnormality_definition_locked
+      - case_control_or_normative_reference_available
+  disease_course_mapping:
+    method_number: 2
+    role: longitudinal_continuous_trajectory_model
+    eligible_when:
+      - repeated_within_subject_measurements_available
+      - visit_timing_or_order_known
+      - sufficient_longitudinal_density_for_individual_parameters
+  gppm:
+    method_number: 3
+    role: uncertainty_aware_latent_time_model
+    eligible_when:
+      - longitudinal_biomarker_support_adequate
+      - computational_requirements_and_priors_locked
+  sustain:
+    method_number: 4
+    role: primary_subtype_stage_cross_sectional_model
+    eligible_when:
+      - baseline_biomarkers_available
+      - subtype_count_selection_rule_locked
+      - sufficient_subject_support_per_candidate_subtype
+    implementation_anchor: pySuStaIn
+    allowed_variants:
+      - mixture_gmm_or_kde
+      - zscore
+      - ordinal
+      - mixedtype_if_feature_types_require_it
+  vae_fnc_interpolation:
+    method_number: 5
+    role: nonlinear_latent_continuum_and_imputation_interpolation_model
+    source_method_context:
+      paper_doi: 10.1162/IMAG.a.1220
+      accessible_article: https://pmc.ncbi.nlm.nih.gov/articles/PMC13125074/
+      title: Brain functional network connectivity interpolation characterizes the neuropsychiatric continuum and heterogeneity
+    eligible_when:
+      - static_or_dynamic_fnc_available
+      - fnc_vectorization_and_windowing_locked
+      - control_low_symptom_or_reference_anchor_locked
+      - reconstruction_and_latent_validation_splits_locked
+    required_outputs:
+      - heldout_reconstruction_error
+      - latent_coordinate_stability
+      - interpolation_path_sanity_checks
+      - comparison_to_linear_latent_baseline
+      - clinical_association_after_site_and_severity_controls
+
+calibration_guardrails:
+  non_dpm_comparators:
+    required:
+      - severity_only
+      - demographics_site_scanner_only
+      - conventional_supervised_prediction
+      - shuffled_or_permuted_endpoint_control
+      - linear_ppca_or_pca_latent_baseline_for_vae
+
+model_selection:
+  adaptive_search_authorized: false
+  subtype_count_selection: lock_by_training_only_cross_validation_or_information_criterion
+  feature_selection: fit_training_roles_only
+  harmonization: fit_training_roles_only
+  normative_z_scoring: fit_controls_or_training_reference_only
+  heldout_endpoint_influence_on_selection: forbidden
+  post_outcome_model_menu_change: forbidden
+
+primary_evaluation_candidates:
+  stability:
+    endpoints:
+      - event_order_uncertainty
+      - subtype_assignment_resampling_stability
+      - stage_rank_reliability
+    controls:
+      - site
+      - scanner
+      - age
+      - sex
+      - motion_or_quality
+  clinical_association:
+    endpoints:
+      - baseline_symptom_severity
+      - symptom_domains_if_available
+    required_adjustments:
+      - age
+      - sex
+      - site_or_scanner
+      - motion_or_quality
+      - medication_or_treatment_state_if_available
+  ect_response:
+    endpoints:
+      - symptom_change
+      - response
+      - remission
+      - relapse_if_available
+    required_adjustments:
+      - baseline_severity
+      - site
+      - age
+      - sex
+      - medication_status_if_available
+      - electrode_placement_or_ect_protocol_if_available
+  transport:
+    endpoints:
+      - chinese_mdd_to_ucla_unm_assignment_and_prediction
+      - ucla_unm_to_chinese_mdd_assignment_and_prediction
+      - chinese_mdd_to_la5c_assignment_and_prediction
+      - la5c_to_chinese_mdd_assignment_and_prediction
+      - mdd_direct_to_other_dataset_assignment_and_prediction
+      - other_dataset_to_mdd_direct_assignment_and_prediction
+      - ucla_to_unm_site_transfer
+      - unm_to_ucla_site_transfer
+    prerequisite: compatible_feature_space_and_split_roles
+  vae_latent_continuum:
+    endpoints:
+      - heldout_fnc_reconstruction_error
+      - latent_coordinate_test_retest_or_resampling_stability
+      - low_symptom_to_high_symptom_or_control_to_patient_interpolation
+      - latent_coordinate_association_with_symptoms
+      - latent_coordinate_prediction_of_treatment_or_followup_endpoint
+    required_adjustments:
+      - site_or_scanner
+      - age
+      - sex
+      - motion_or_quality
+      - baseline_severity_when_predicting_followup
+
+split_policy:
+  participant_grouping: all_visits_from_one_participant_must_share_role_unless_forecasting_design_says_otherwise
+  site_holdout_required_for_site_transport_claim: true
+  final_endpoint_opening_required_for_confirmatory_ect_response_claim: true
+  repeated_measures_may_not_leak_future_outcomes_into_baseline_prediction: true
+  split_repair_after_outcome_access: forbidden
+
+claim_rules:
+  reproducible_dpm_structure_requires:
+    - stable_within_dataset_assignments
+    - adjusted_clinical_or_treatment_association
+    - no_dominant_site_or_scanner_proxy
+    - support_in_heldout_roles
+  cross_dataset_generalization_requires:
+    - compatible_features
+    - locked_train_to_test_assignment
+    - heldout_endpoint_evaluation_without_refit
+  vae_continuum_claim_requires:
+    - heldout_reconstruction_support
+    - latent_stability_support
+    - improvement_over_linear_latent_baseline
+    - no_dominant_site_scanner_or_motion_axis
+  longitudinal_progression_claim_requires:
+    - repeated_measure_support
+    - directionality_consistent_with_locked_interpretation
+    - explicit_handling_of_treatment_reversibility
+  treatment_prediction_claim_requires:
+    - baseline_only_predictors_for_baseline_prediction
+    - adjustment_against_baseline_severity_and_site
+    - uncertainty_by_independent_subject_not_visit_or_feature
+
+falsifiers:
+  - stage_or_subtype_is_explained_by_site_scanner_motion_age_or_severity
+  - subtype_count_or_order_unstable_under_training_only_resampling
+  - no_transport_under_compatible_feature_space
+  - ect_longitudinal_change_reverses_the_locked_progression_interpretation
+  - no_added_value_over_severity_site_and_standard_supervised_baselines
+  - vae_latent_space_fails_to_improve_over_linear_latent_baseline
+  - vae_interpolation_axis_tracks_site_scanner_motion_or_diagnosis_label_only
+  - harmonization_or_feature_choice_changes_the_core_conclusion
+
+outputs:
+  required_before_execution:
+    - outputs/protocol_lock.yaml
+    - outputs/experiment_log.md
+    - outputs/README.md
+  durable_artifacts_location: outputs/
+  transient_scratch_location: "$SCRATCH/br_autoresearch/episode22_depression_dpm_benchmark/"
+  inputs_are_read_only: true
